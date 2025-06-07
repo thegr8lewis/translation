@@ -366,11 +366,36 @@ const NewsApp = () => {
   const returnToEnglish = (e) => {
     e.preventDefault();
     if (isTranslated) {
-      const urlParams = new URLSearchParams(window.location.search);
-      const originalUrl = urlParams.get('u');
-      if (originalUrl) {
-        window.location.href = decodeURIComponent(originalUrl);
-        setIsTranslated(false);
+      // Attempt to revert Google Translate within the same tab
+      try {
+        // Try to find and click the "Original" or "English" option in Google Translate
+        const translateElement = document.querySelector('.goog-te-menu-value span');
+        if (translateElement && translateElement.textContent.includes('English')) {
+          translateElement.click();
+          setIsTranslated(false);
+          return;
+        }
+
+        // Fallback: Attempt to close the Google Translate iframe
+        const translateIframe = document.querySelector('iframe.goog-te-banner-frame');
+        if (translateIframe) {
+          translateIframe.style.display = 'none';
+        }
+
+        // Fallback: Reload the original URL in the same tab without popup
+        const urlParams = new URLSearchParams(window.location.search);
+        const originalUrl = urlParams.get('u');
+        if (originalUrl) {
+          window.location.href = decodeURIComponent(originalUrl); // Same tab reload
+          setIsTranslated(false);
+        }
+      } catch (error) {
+        console.log('Error reverting translation:', error);
+        // Last resort: Reload with a meta refresh if all else fails
+        const meta = document.createElement('meta');
+        meta.httpEquiv = 'refresh';
+        meta.content = `0;url=${decodeURIComponent(urlParams.get('u') || window.location.origin)}`;
+        document.head.appendChild(meta);
       }
     }
   };
@@ -384,7 +409,6 @@ const NewsApp = () => {
         if (translateBar) {
           translateBar.style.display = 'none';
         }
-        // Alternative attempt with common Google Translate classes
         const translateIframe = document.querySelector('iframe.goog-te-banner-frame');
         if (translateIframe) {
           try {
@@ -395,7 +419,6 @@ const NewsApp = () => {
         }
       };
 
-      // Run the hide function after a short delay to ensure the strip loads
       setTimeout(hideTranslateStrip, 1000);
 
       // Add CSS attempt via style tag
