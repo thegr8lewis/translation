@@ -269,18 +269,16 @@
 
 // export default NewsApp;
 
-import React, { useState, useEffect } from 'react';
-import { Search, Menu, Bell, User, Clock, Eye, Share2, Bookmark, Loader2 } from 'lucide-react';
+import React, { useState } from 'react';
+import { Search, Menu, Bell, User, Clock, Eye, Share2, Bookmark } from 'lucide-react';
 
 const NewsApp = () => {
   const [activeCategory, setActiveCategory] = useState('All');
-  const [currentLanguage, setCurrentLanguage] = useState('en');
-  const [isTranslating, setIsTranslating] = useState(false);
-  const [translatedContent, setTranslatedContent] = useState({});
+  const [isTranslated, setIsTranslated] = useState(false);
   
   const categories = ['All', 'Technology', 'Business', 'Sports', 'Health', 'Science'];
   
-  const originalNewsData = [
+  const newsData = [
     {
       id: 1,
       title: "Revolutionary AI Technology Transforms Healthcare Industry",
@@ -355,143 +353,43 @@ const NewsApp = () => {
     }
   ];
 
-  // Free translation service using MyMemory API
-  const translateText = async (text, targetLang) => {
-    try {
-      const response = await fetch(
-        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`
-      );
-      const data = await response.json();
-      return data.responseData.translatedText;
-    } catch (error) {
-      console.error('Translation error:', error);
-      return text; // Return original text if translation fails
+  const translateToSomali = () => {
+    if (!isTranslated) {
+      const currentUrl = window.location.href;
+      const googleTranslateUrl = `https://translate.google.com/translate?hl=so&sl=en&tl=so&u=${encodeURIComponent(currentUrl)}`;
+      window.location.href = googleTranslateUrl;
     }
   };
 
-  // Translate all content
-  const translateAllContent = async (targetLang) => {
-    if (targetLang === 'en') {
-      setTranslatedContent({});
-      return;
-    }
-
-    setIsTranslating(true);
-    
-    try {
-      const translated = {};
-      
-      // Translate UI elements
-      const uiTexts = {
-        searchPlaceholder: "Search news...",
-        featuredStory: "Featured Story",
-        latestNews: "Latest News",
-        categories: {
-          All: "All",
-          Technology: "Technology",
-          Business: "Business", 
-          Sports: "Sports",
-          Health: "Health",
-          Science: "Science"
-        }
-      };
-
-      translated.ui = {};
-      translated.ui.searchPlaceholder = await translateText(uiTexts.searchPlaceholder, targetLang);
-      translated.ui.featuredStory = await translateText(uiTexts.featuredStory, targetLang);
-      translated.ui.latestNews = await translateText(uiTexts.latestNews, targetLang);
-      
-      translated.ui.categories = {};
-      for (const [key, value] of Object.entries(uiTexts.categories)) {
-        translated.ui.categories[key] = await translateText(value, targetLang);
-      }
-
-      // Translate news articles
-      translated.articles = {};
-      for (const article of originalNewsData) {
-        translated.articles[article.id] = {
-          title: await translateText(article.title, targetLang),
-          summary: await translateText(article.summary, targetLang),
-          category: await translateText(article.category, targetLang),
-          readTime: await translateText(article.readTime, targetLang),
-          publishedAt: await translateText(article.publishedAt, targetLang)
-        };
-      }
-
-      setTranslatedContent(translated);
-    } catch (error) {
-      console.error('Translation failed:', error);
-    } finally {
-      setIsTranslating(false);
-    }
-  };
-
-  const switchToSomali = () => {
-    setCurrentLanguage('so');
-    translateAllContent('so');
-  };
-
-  const switchToEnglish = () => {
-    setCurrentLanguage('en');
-    setTranslatedContent({});
-  };
-
-  // Get translated text or fallback to original
-  const getTranslatedText = (originalText, translationPath) => {
-    if (currentLanguage === 'en') return originalText;
-    
-    const pathArray = translationPath.split('.');
-    let current = translatedContent;
-    
-    for (const key of pathArray) {
-      if (current && current[key]) {
-        current = current[key];
-      } else {
-        return originalText; // Fallback to original if translation not found
+  const returnToEnglish = () => {
+    if (isTranslated) {
+      // If we're in a translated view, extract original URL
+      const urlParams = new URLSearchParams(window.location.search);
+      const originalUrl = urlParams.get('u');
+      if (originalUrl) {
+        window.location.href = decodeURIComponent(originalUrl);
       }
     }
-    
-    return current || originalText;
   };
 
-  // Get article data with translations
-  const getArticleData = (article) => {
-    if (currentLanguage === 'en' || !translatedContent.articles?.[article.id]) {
-      return article;
+  // Check if we're in a translated view on component mount
+  React.useEffect(() => {
+    if (window.location.href.includes('translate.google.com')) {
+      setIsTranslated(true);
     }
-    
-    const translated = translatedContent.articles[article.id];
-    return {
-      ...article,
-      title: translated.title,
-      summary: translated.summary,
-      category: translated.category,
-      readTime: translated.readTime,
-      publishedAt: translated.publishedAt
-    };
-  };
+  }, []);
 
   const filteredNews = activeCategory === 'All' 
-    ? originalNewsData 
-    : originalNewsData.filter(article => article.category === activeCategory);
+    ? newsData 
+    : newsData.filter(article => article.category === activeCategory);
 
-  const featuredArticle = originalNewsData.find(article => article.featured);
+  const featuredArticle = newsData.find(article => article.featured);
   const regularArticles = filteredNews.filter(article => !article.featured);
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Loading overlay */}
-      {isTranslating && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
-            <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
-            <span className="text-lg font-medium">Translating content...</span>
-          </div>
-        </div>
-      )}
-
       {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
@@ -504,7 +402,7 @@ const NewsApp = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder={getTranslatedText("Search news...", "ui.searchPlaceholder")}
+                  placeholder="Search news..."
                   className="pl-10 pr-4 py-2 w-80 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -514,11 +412,12 @@ const NewsApp = () => {
               {/* Language Selector Flags */}
               <div className="flex items-center space-x-2 mr-4">
                 <button 
-                  onClick={switchToEnglish}
-                  disabled={isTranslating}
+                  onClick={returnToEnglish}
                   className={`w-8 h-6 rounded-sm overflow-hidden border transition-colors ${
-                    currentLanguage === 'en' ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-500'
-                  } ${isTranslating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    !isTranslated 
+                      ? 'border-blue-500' 
+                      : 'border-gray-200 hover:border-blue-500'
+                  }`}
                   title="English (Kenya)"
                 >
                   <img 
@@ -528,11 +427,12 @@ const NewsApp = () => {
                   />
                 </button>
                 <button 
-                  onClick={switchToSomali}
-                  disabled={isTranslating}
+                  onClick={translateToSomali}
                   className={`w-8 h-6 rounded-sm overflow-hidden border transition-colors ${
-                    currentLanguage === 'so' ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-500'
-                  } ${isTranslating ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    isTranslated 
+                      ? 'border-blue-500' 
+                      : 'border-gray-200 hover:border-blue-500'
+                  }`}
                   title="Somali"
                 >
                   <img 
@@ -566,7 +466,7 @@ const NewsApp = () => {
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
-                {getTranslatedText(category, `ui.categories.${category}`)}
+                {category}
               </button>
             ))}
           </div>
@@ -578,38 +478,36 @@ const NewsApp = () => {
         {/* Featured Article */}
         {featuredArticle && activeCategory === 'All' && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">
-              {getTranslatedText("Featured Story", "ui.featuredStory")}
-            </h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Story</h2>
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
               <div className="md:flex">
                 <div className="md:w-1/2">
                   <img
                     src={featuredArticle.image}
-                    alt={getArticleData(featuredArticle).title}
+                    alt={featuredArticle.title}
                     className="w-full h-64 md:h-full object-cover"
                   />
                 </div>
                 <div className="md:w-1/2 p-8">
                   <div className="flex items-center space-x-2 mb-4">
                     <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                      {getArticleData(featuredArticle).category}
+                      {featuredArticle.category}
                     </span>
                     <span className="text-gray-500 text-sm">•</span>
-                    <span className="text-gray-500 text-sm">{getArticleData(featuredArticle).publishedAt}</span>
+                    <span className="text-gray-500 text-sm">{featuredArticle.publishedAt}</span>
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-4 leading-tight">
-                    {getArticleData(featuredArticle).title}
+                    {featuredArticle.title}
                   </h3>
                   <p className="text-gray-600 mb-6 text-lg leading-relaxed">
-                    {getArticleData(featuredArticle).summary}
+                    {featuredArticle.summary}
                   </p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4 text-sm text-gray-500">
                       <span className="font-medium">{featuredArticle.author}</span>
                       <div className="flex items-center space-x-1">
                         <Clock className="h-4 w-4" />
-                        <span>{getArticleData(featuredArticle).readTime}</span>
+                        <span>{featuredArticle.readTime}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Eye className="h-4 w-4" />
@@ -634,72 +532,66 @@ const NewsApp = () => {
         {/* News Grid */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            {activeCategory === 'All' 
-              ? getTranslatedText("Latest News", "ui.latestNews")
-              : `${getTranslatedText(activeCategory, `ui.categories.${activeCategory}`)} ${getTranslatedText("Latest News", "ui.latestNews").split(' ')[1] || 'News'}`
-            }
+            {activeCategory === 'All' ? 'Latest News' : `${activeCategory} News`}
           </h2>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {regularArticles.map((article) => {
-              const articleData = getArticleData(article);
-              return (
-                <article
-                  key={article.id}
-                  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer"
-                >
-                  <div className="relative overflow-hidden">
-                    <img
-                      src={article.image}
-                      alt={articleData.title}
-                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                    />
-                    <div className="absolute top-4 left-4">
-                      <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-medium rounded-full">
-                        {articleData.category}
-                      </span>
+            {regularArticles.map((article) => (
+              <article
+                key={article.id}
+                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer"
+              >
+                <div className="relative overflow-hidden">
+                  <img
+                    src={article.image}
+                    alt={article.title}
+                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute top-4 left-4">
+                    <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-medium rounded-full">
+                      {article.category}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="p-6">
+                  <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
+                    {article.title}
+                  </h3>
+                  <p className="text-gray-600 mb-4 text-sm leading-relaxed line-clamp-3">
+                    {article.summary}
+                  </p>
+                  
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <div className="flex items-center space-x-3">
+                      <span className="font-medium">{article.author}</span>
+                      <span>•</span>
+                      <span>{article.publishedAt}</span>
                     </div>
                   </div>
                   
-                  <div className="p-6">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
-                      {articleData.title}
-                    </h3>
-                    <p className="text-gray-600 mb-4 text-sm leading-relaxed line-clamp-3">
-                      {articleData.summary}
-                    </p>
-                    
-                    <div className="flex items-center justify-between text-xs text-gray-500">
-                      <div className="flex items-center space-x-3">
-                        <span className="font-medium">{article.author}</span>
-                        <span>•</span>
-                        <span>{articleData.publishedAt}</span>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                      <div className="flex items-center space-x-4 text-xs text-gray-500">
-                        <div className="flex items-center space-x-1">
-                          <Clock className="h-3 w-3" />
-                          <span>{articleData.readTime}</span>
-                        </div>
-                        <div className="flex items-center space-x-1">
-                          <Eye className="h-3 w-3" />
-                          <span>{article.views}</span>
-                        </div>
+                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center space-x-4 text-xs text-gray-500">
+                      <div className="flex items-center space-x-1">
+                        <Clock className="h-3 w-3" />
+                        <span>{article.readTime}</span>
                       </div>
                       <div className="flex items-center space-x-1">
-                        <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors">
-                          <Share2 className="h-3 w-3" />
-                        </button>
-                        <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors">
-                          <Bookmark className="h-3 w-3" />
-                        </button>
+                        <Eye className="h-3 w-3" />
+                        <span>{article.views}</span>
                       </div>
                     </div>
+                    <div className="flex items-center space-x-1">
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors">
+                        <Share2 className="h-3 w-3" />
+                      </button>
+                      <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors">
+                        <Bookmark className="h-3 w-3" />
+                      </button>
+                    </div>
                   </div>
-                </article>
-              );
-            })}
+                </div>
+              </article>
+            ))}
           </div>
         </div>
       </main>
