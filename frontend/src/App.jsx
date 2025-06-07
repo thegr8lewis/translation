@@ -274,100 +274,213 @@ import { Search, Menu, Bell, User, Clock, Eye, Share2, Bookmark } from 'lucide-r
 
 const NewsApp = () => {
   const [activeCategory, setActiveCategory] = useState('All');
+  const [currentLanguage, setCurrentLanguage] = useState('en');
   
   const categories = ['All', 'Technology', 'Business', 'Sports', 'Health', 'Science'];
   
-  const newsData = [
-    {
-      id: 1,
-      title: "Revolutionary AI Technology Transforms Healthcare Industry",
-      summary: "New artificial intelligence breakthrough promises to revolutionize patient care and medical diagnostics across hospitals worldwide.",
-      category: "Technology",
-      author: "Sarah Johnson",
-      publishedAt: "2 hours ago",
-      readTime: "5 min read",
-      views: "12.5K",
-      image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=400&fit=crop",
-      featured: true
+  // Translation data
+  const translations = {
+    en: {
+      title: "NewsHub",
+      searchPlaceholder: "Search news...",
+      featuredStory: "Featured Story",
+      latestNews: "Latest News",
+      categories: {
+        All: "All",
+        Technology: "Technology", 
+        Business: "Business",
+        Sports: "Sports",
+        Health: "Health",
+        Science: "Science"
+      }
     },
-    {
-      id: 2,
-      title: "Global Markets Show Strong Recovery After Recent Volatility",
-      summary: "Stock markets worldwide demonstrate resilience as investors regain confidence following last week's economic uncertainties.",
-      category: "Business",
-      author: "Michael Chen",
-      publishedAt: "4 hours ago",
-      readTime: "3 min read",
-      views: "8.2K",
-      image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=400&fit=crop",
-      featured: false
-    },
-    {
-      id: 3,
-      title: "Olympic Training Facilities Embrace Sustainable Technology",
-      summary: "Athletes prepare for upcoming competitions using eco-friendly equipment and renewable energy-powered training centers.",
-      category: "Sports",
-      author: "Emma Rodriguez",
-      publishedAt: "6 hours ago",
-      readTime: "4 min read",
-      views: "6.7K",
-      image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop",
-      featured: false
-    },
-    {
-      id: 4,
-      title: "Breakthrough in Cancer Research Offers New Hope",
-      summary: "Scientists discover promising treatment method that shows significant improvement in early clinical trials.",
-      category: "Health",
-      author: "Dr. James Wilson",
-      publishedAt: "8 hours ago",
-      readTime: "6 min read",
-      views: "15.3K",
-      image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800&h=400&fit=crop",
-      featured: false
-    },
-    {
-      id: 5,
-      title: "Space Mission Reveals Stunning Images of Distant Galaxy",
-      summary: "Latest telescope observations provide unprecedented views of stellar formations billions of light-years away.",
-      category: "Science",
-      author: "Dr. Lisa Park",
-      publishedAt: "10 hours ago",
-      readTime: "4 min read",
-      views: "9.1K",
-      image: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=400&fit=crop",
-      featured: false
-    },
-    {
-      id: 6,
-      title: "Tech Giants Announce Major Climate Initiative",
-      summary: "Leading technology companies pledge billions toward carbon neutrality and sustainable innovation projects.",
-      category: "Technology",
-      author: "Alex Thompson",
-      publishedAt: "12 hours ago",
-      readTime: "5 min read",
-      views: "11.8K",
-      image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=400&fit=crop",
-      featured: false
+    so: {
+      title: "NewsHub",
+      searchPlaceholder: "Raadi wararka...",
+      featuredStory: "Sheeko Muhiim ah",
+      latestNews: "Wararka Cusub",
+      categories: {
+        All: "Dhammaan",
+        Technology: "Tignoolajiyada",
+        Business: "Ganacsiga", 
+        Sports: "Ciyaaraha",
+        Health: "Caafimaadka",
+        Science: "Sayniska"
+      }
     }
-  ];
-
-  const translateToSomali = () => {
-    const currentUrl = window.location.href;
-    const googleTranslateUrl = `https://translate.google.com/translate?hl=so&sl=en&tl=so&u=${encodeURIComponent(currentUrl)}`;
-    window.open(googleTranslateUrl, '_blank');
   };
 
-  const returnToEnglish = () => {
-    // Reload the page to return to original English content
-    window.location.reload();
+  const newsData = {
+    en: [
+      {
+        id: 1,
+        title: "Revolutionary AI Technology Transforms Healthcare Industry",
+        summary: "New artificial intelligence breakthrough promises to revolutionize patient care and medical diagnostics across hospitals worldwide.",
+        category: "Technology",
+        author: "Sarah Johnson",
+        publishedAt: "2 hours ago",
+        readTime: "5 min read",
+        views: "12.5K",
+        image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=400&fit=crop",
+        featured: true
+      },
+      {
+        id: 2,
+        title: "Global Markets Show Strong Recovery After Recent Volatility",
+        summary: "Stock markets worldwide demonstrate resilience as investors regain confidence following last week's economic uncertainties.",
+        category: "Business",
+        author: "Michael Chen",
+        publishedAt: "4 hours ago",
+        readTime: "3 min read",
+        views: "8.2K",
+        image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=400&fit=crop",
+        featured: false
+      },
+      {
+        id: 3,
+        title: "Olympic Training Facilities Embrace Sustainable Technology",
+        summary: "Athletes prepare for upcoming competitions using eco-friendly equipment and renewable energy-powered training centers.",
+        category: "Sports",
+        author: "Emma Rodriguez",
+        publishedAt: "6 hours ago",
+        readTime: "4 min read",
+        views: "6.7K",
+        image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop",
+        featured: false
+      },
+      {
+        id: 4,
+        title: "Breakthrough in Cancer Research Offers New Hope",
+        summary: "Scientists discover promising treatment method that shows significant improvement in early clinical trials.",
+        category: "Health",
+        author: "Dr. James Wilson",
+        publishedAt: "8 hours ago",
+        readTime: "6 min read",
+        views: "15.3K",
+        image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800&h=400&fit=crop",
+        featured: false
+      },
+      {
+        id: 5,
+        title: "Space Mission Reveals Stunning Images of Distant Galaxy",
+        summary: "Latest telescope observations provide unprecedented views of stellar formations billions of light-years away.",
+        category: "Science",
+        author: "Dr. Lisa Park",
+        publishedAt: "10 hours ago",
+        readTime: "4 min read",
+        views: "9.1K",
+        image: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=400&fit=crop",
+        featured: false
+      },
+      {
+        id: 6,
+        title: "Tech Giants Announce Major Climate Initiative",
+        summary: "Leading technology companies pledge billions toward carbon neutrality and sustainable innovation projects.",
+        category: "Technology",
+        author: "Alex Thompson",
+        publishedAt: "12 hours ago",
+        readTime: "5 min read",
+        views: "11.8K",
+        image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=400&fit=crop",
+        featured: false
+      }
+    ],
+    so: [
+      {
+        id: 1,
+        title: "Tignoolajiyada AI ee Kacsan ay Bedeshay Warshadda Caafimaadka",
+        summary: "Horumarka cusub ee sirdoonka macmalka ah ayaa ballan qaadaya inuu bedelo daryeelka bukaanka iyo baarista caafimaadka guud ahaan isbitaalada adduunka.",
+        category: "Tignoolajiyada",
+        author: "Sarah Johnson",
+        publishedAt: "2 saacadood ka hor",
+        readTime: "5 daqiiqo aqris",
+        views: "12.5K",
+        image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=400&fit=crop",
+        featured: true
+      },
+      {
+        id: 2,
+        title: "Suuqyada Caalamiga ah ayaa Muujiyay Soo Kabbasho Xoog leh ka dib Dhaqdhaqaaqa Dhowaan",
+        summary: "Suuqyada saamiyada adduunka ayaa muujiyay adkaysi iyadoo maalgashi-dayaashuhu ay dib u helayaan kalsoonida ka dib welwelka dhaqaalaha ee todobaadkii hore.",
+        category: "Ganacsiga",
+        author: "Michael Chen",
+        publishedAt: "4 saacadood ka hor",
+        readTime: "3 daqiiqo aqris",
+        views: "8.2K",
+        image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=400&fit=crop",
+        featured: false
+      },
+      {
+        id: 3,
+        title: "Xarumaha Tababarka Olimbikada ayaa Qaatay Tignoolajiyada Joogtada ah",
+        summary: "Ciyaartoydu waxay u diyaargaroobayaan tartammada soo socda iyagoo isticmaalaya qalabka deegaanka u saaxiibka ah iyo xarumaha tababarka ee ku shaqeeya tamada la cusboonaysiin karo.",
+        category: "Ciyaaraha",
+        author: "Emma Rodriguez",
+        publishedAt: "6 saacadood ka hor",
+        readTime: "4 daqiiqo aqris",
+        views: "6.7K",
+        image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop",
+        featured: false
+      },
+      {
+        id: 4,
+        title: "Horumarka Cilmi-baarista Kansarka ah ayaa Bixiyay Rajada Cusub",
+        summary: "Saynisyahannadu waxay heleen hab daweeyn oo rajo badan oo muujiya horumar la taaban karo tijaabooyin caafimaad oo hore.",
+        category: "Caafimaadka",
+        author: "Dr. James Wilson",
+        publishedAt: "8 saacadood ka hor",
+        readTime: "6 daqiiqo aqris",
+        views: "15.3K",
+        image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800&h=400&fit=crop",
+        featured: false
+      },
+      {
+        id: 5,
+        title: "Hawlgalka Hawada Sare ayaa Shaaciyay Sawirro Cajiib ah oo Galaxi Fog",
+        summary: "Indha-indheynta durbaankii ugu dambeeyay ayaa bixisay aragtiyo aan hore loo arag oo ku saabsan qaabdhismeedka xiddigaha bilyan sannadood iftiimo fog.",
+        category: "Sayniska",
+        author: "Dr. Lisa Park",
+        publishedAt: "10 saacadood ka hor",
+        readTime: "4 daqiiqo aqris",
+        views: "9.1K",
+        image: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=400&fit=crop",
+        featured: false
+      },
+      {
+        id: 6,
+        title: "Gawaarida Tignoolajiyada Waaweyn ayaa Ku Dhawaaqay Hindise Weyn oo Cimilada ah",
+        summary: "Shirkadaha tignoolajiyada hogaamiya ayaa ballan qaadaya bilyan doolar oo loogu talagalay dhexdhexaadnimada kaarboonka iyo mashaariicda hal-abuurka joogtada ah.",
+        category: "Tignoolajiyada",
+        author: "Alex Thompson",
+        publishedAt: "12 saacadood ka hor",
+        readTime: "5 daqiiqo aqris",
+        views: "11.8K",
+        image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=400&fit=crop",
+        featured: false
+      }
+    ]
   };
+
+  const switchToSomali = () => {
+    setCurrentLanguage('so');
+  };
+
+  const switchToEnglish = () => {
+    setCurrentLanguage('en');
+  };
+
+  const currentTranslations = translations[currentLanguage];
+  const currentNewsData = newsData[currentLanguage];
 
   const filteredNews = activeCategory === 'All' 
-    ? newsData 
-    : newsData.filter(article => article.category === activeCategory);
+    ? currentNewsData 
+    : currentNewsData.filter(article => 
+        currentLanguage === 'en' 
+          ? article.category === activeCategory
+          : article.category === currentTranslations.categories[activeCategory]
+      );
 
-  const featuredArticle = newsData.find(article => article.featured);
+  const featuredArticle = currentNewsData.find(article => article.featured);
   const regularArticles = filteredNews.filter(article => !article.featured);
 
   return (
@@ -378,7 +491,7 @@ const NewsApp = () => {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Menu className="h-6 w-6 text-gray-600 md:hidden" />
-              <h1 className="text-2xl font-bold text-gray-900">NewsHub</h1>
+              <h1 className="text-2xl font-bold text-gray-900">{currentTranslations.title}</h1>
             </div>
             
             <div className="hidden md:flex items-center space-x-8">
@@ -386,7 +499,7 @@ const NewsApp = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder="Search news..."
+                  placeholder={currentTranslations.searchPlaceholder}
                   className="pl-10 pr-4 py-2 w-80 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -396,8 +509,10 @@ const NewsApp = () => {
               {/* Language Selector Flags */}
               <div className="flex items-center space-x-2 mr-4">
                 <button 
-                  onClick={returnToEnglish}
-                  className="w-8 h-6 rounded-sm overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors"
+                  onClick={switchToEnglish}
+                  className={`w-8 h-6 rounded-sm overflow-hidden border transition-colors ${
+                    currentLanguage === 'en' ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-500'
+                  }`}
                   title="English (Kenya)"
                 >
                   <img 
@@ -407,8 +522,10 @@ const NewsApp = () => {
                   />
                 </button>
                 <button 
-                  onClick={translateToSomali}
-                  className="w-8 h-6 rounded-sm overflow-hidden border border-gray-200 hover:border-blue-500 transition-colors"
+                  onClick={switchToSomali}
+                  className={`w-8 h-6 rounded-sm overflow-hidden border transition-colors ${
+                    currentLanguage === 'so' ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-500'
+                  }`}
                   title="Somali"
                 >
                   <img 
@@ -442,7 +559,7 @@ const NewsApp = () => {
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
-                {category}
+                {currentTranslations.categories[category]}
               </button>
             ))}
           </div>
@@ -454,7 +571,7 @@ const NewsApp = () => {
         {/* Featured Article */}
         {featuredArticle && activeCategory === 'All' && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">Featured Story</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">{currentTranslations.featuredStory}</h2>
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
               <div className="md:flex">
                 <div className="md:w-1/2">
@@ -508,7 +625,7 @@ const NewsApp = () => {
         {/* News Grid */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            {activeCategory === 'All' ? 'Latest News' : `${activeCategory} News`}
+            {activeCategory === 'All' ? currentTranslations.latestNews : `${currentTranslations.categories[activeCategory]} ${currentTranslations.latestNews.split(' ')[1] || 'News'}`}
           </h2>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             {regularArticles.map((article) => (
