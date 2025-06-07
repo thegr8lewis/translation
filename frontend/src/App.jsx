@@ -269,7 +269,7 @@
 
 // export default NewsApp;
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Menu, Bell, User, Clock, Eye, Share2, Bookmark } from 'lucide-react';
 
 const NewsApp = () => {
@@ -353,31 +353,38 @@ const NewsApp = () => {
     }
   ];
 
-  const translateToSomali = () => {
+  const translateToSomali = (e) => {
+    e.preventDefault();
     if (!isTranslated) {
       const currentUrl = window.location.href;
       const googleTranslateUrl = `https://translate.google.com/translate?hl=so&sl=en&tl=so&u=${encodeURIComponent(currentUrl)}`;
       window.location.href = googleTranslateUrl;
+      setIsTranslated(true);
     }
   };
 
-  const returnToEnglish = () => {
+  const returnToEnglish = (e) => {
+    e.preventDefault();
     if (isTranslated) {
-      // If we're in a translated view, extract original URL
       const urlParams = new URLSearchParams(window.location.search);
       const originalUrl = urlParams.get('u');
       if (originalUrl) {
         window.location.href = decodeURIComponent(originalUrl);
+        setIsTranslated(false);
       }
     }
   };
 
-  // Check if we're in a translated view on component mount
-  React.useEffect(() => {
+  useEffect(() => {
     if (window.location.href.includes('translate.google.com')) {
       setIsTranslated(true);
     }
   }, []);
+
+  const handleCategoryClick = (category, e) => {
+    e.preventDefault();
+    setActiveCategory(category);
+  };
 
   const filteredNews = activeCategory === 'All' 
     ? newsData 
@@ -457,17 +464,18 @@ const NewsApp = () => {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex space-x-8 overflow-x-auto py-4">
             {categories.map((category) => (
-              <button
+              <a
                 key={category}
-                onClick={() => setActiveCategory(category)}
-                className={`whitespace-nowrap px-4 py-2 text-sm font-medium rounded-full transition-colors ${
+                href="#"
+                onClick={(e) => handleCategoryClick(category, e)}
+                className={`whitespace-nowrap px-4 py-2 text-sm font-medium rounded-full transition-colors cursor-pointer ${
                   activeCategory === category
                     ? 'bg-blue-500 text-white'
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
                 {category}
-              </button>
+              </a>
             ))}
           </div>
         </div>
