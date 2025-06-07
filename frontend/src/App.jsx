@@ -378,6 +378,38 @@ const NewsApp = () => {
   useEffect(() => {
     if (window.location.href.includes('translate.google.com')) {
       setIsTranslated(true);
+      // Attempt to hide Google Translate strip
+      const hideTranslateStrip = () => {
+        const translateBar = document.querySelector('.skiptranslate.goog-te-gadget');
+        if (translateBar) {
+          translateBar.style.display = 'none';
+        }
+        // Alternative attempt with common Google Translate classes
+        const translateIframe = document.querySelector('iframe.goog-te-banner-frame');
+        if (translateIframe) {
+          try {
+            translateIframe.style.display = 'none';
+          } catch (e) {
+            console.log('Cross-origin restriction prevented iframe style change:', e);
+          }
+        }
+      };
+
+      // Run the hide function after a short delay to ensure the strip loads
+      setTimeout(hideTranslateStrip, 1000);
+
+      // Add CSS attempt via style tag
+      const style = document.createElement('style');
+      style.textContent = `
+        .skiptranslate.goog-te-gadget, 
+        .goog-te-banner-frame, 
+        .goog-te-menu-frame,
+        .goog-te-ft,
+        #goog-gt-tt {
+          display: none !important;
+        }
+      `;
+      document.head.appendChild(style);
     }
   }, []);
 
