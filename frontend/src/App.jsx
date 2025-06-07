@@ -269,229 +269,234 @@
 
 // export default NewsApp;
 
-import React, { useState } from 'react';
-import { Search, Menu, Bell, User, Clock, Eye, Share2, Bookmark } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Search, Menu, Bell, User, Clock, Eye, Share2, Bookmark, Loader2 } from 'lucide-react';
 
 const NewsApp = () => {
   const [activeCategory, setActiveCategory] = useState('All');
   const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [isTranslating, setIsTranslating] = useState(false);
+  const [translatedContent, setTranslatedContent] = useState({});
   
   const categories = ['All', 'Technology', 'Business', 'Sports', 'Health', 'Science'];
   
-  // Translation data
-  const translations = {
-    en: {
-      title: "NewsHub",
-      searchPlaceholder: "Search news...",
-      featuredStory: "Featured Story",
-      latestNews: "Latest News",
-      categories: {
-        All: "All",
-        Technology: "Technology", 
-        Business: "Business",
-        Sports: "Sports",
-        Health: "Health",
-        Science: "Science"
-      }
+  const originalNewsData = [
+    {
+      id: 1,
+      title: "Revolutionary AI Technology Transforms Healthcare Industry",
+      summary: "New artificial intelligence breakthrough promises to revolutionize patient care and medical diagnostics across hospitals worldwide.",
+      category: "Technology",
+      author: "Sarah Johnson",
+      publishedAt: "2 hours ago",
+      readTime: "5 min read",
+      views: "12.5K",
+      image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=400&fit=crop",
+      featured: true
     },
-    so: {
-      title: "NewsHub",
-      searchPlaceholder: "Raadi wararka...",
-      featuredStory: "Sheeko Muhiim ah",
-      latestNews: "Wararka Cusub",
-      categories: {
-        All: "Dhammaan",
-        Technology: "Tignoolajiyada",
-        Business: "Ganacsiga", 
-        Sports: "Ciyaaraha",
-        Health: "Caafimaadka",
-        Science: "Sayniska"
-      }
+    {
+      id: 2,
+      title: "Global Markets Show Strong Recovery After Recent Volatility",
+      summary: "Stock markets worldwide demonstrate resilience as investors regain confidence following last week's economic uncertainties.",
+      category: "Business",
+      author: "Michael Chen",
+      publishedAt: "4 hours ago",
+      readTime: "3 min read",
+      views: "8.2K",
+      image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=400&fit=crop",
+      featured: false
+    },
+    {
+      id: 3,
+      title: "Olympic Training Facilities Embrace Sustainable Technology",
+      summary: "Athletes prepare for upcoming competitions using eco-friendly equipment and renewable energy-powered training centers.",
+      category: "Sports",
+      author: "Emma Rodriguez",
+      publishedAt: "6 hours ago",
+      readTime: "4 min read",
+      views: "6.7K",
+      image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop",
+      featured: false
+    },
+    {
+      id: 4,
+      title: "Breakthrough in Cancer Research Offers New Hope",
+      summary: "Scientists discover promising treatment method that shows significant improvement in early clinical trials.",
+      category: "Health",
+      author: "Dr. James Wilson",
+      publishedAt: "8 hours ago",
+      readTime: "6 min read",
+      views: "15.3K",
+      image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800&h=400&fit=crop",
+      featured: false
+    },
+    {
+      id: 5,
+      title: "Space Mission Reveals Stunning Images of Distant Galaxy",
+      summary: "Latest telescope observations provide unprecedented views of stellar formations billions of light-years away.",
+      category: "Science",
+      author: "Dr. Lisa Park",
+      publishedAt: "10 hours ago",
+      readTime: "4 min read",
+      views: "9.1K",
+      image: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=400&fit=crop",
+      featured: false
+    },
+    {
+      id: 6,
+      title: "Tech Giants Announce Major Climate Initiative",
+      summary: "Leading technology companies pledge billions toward carbon neutrality and sustainable innovation projects.",
+      category: "Technology",
+      author: "Alex Thompson",
+      publishedAt: "12 hours ago",
+      readTime: "5 min read",
+      views: "11.8K",
+      image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=400&fit=crop",
+      featured: false
+    }
+  ];
+
+  // Free translation service using MyMemory API
+  const translateText = async (text, targetLang) => {
+    try {
+      const response = await fetch(
+        `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=en|${targetLang}`
+      );
+      const data = await response.json();
+      return data.responseData.translatedText;
+    } catch (error) {
+      console.error('Translation error:', error);
+      return text; // Return original text if translation fails
     }
   };
 
-  const newsData = {
-    en: [
-      {
-        id: 1,
-        title: "Revolutionary AI Technology Transforms Healthcare Industry",
-        summary: "New artificial intelligence breakthrough promises to revolutionize patient care and medical diagnostics across hospitals worldwide.",
-        category: "Technology",
-        author: "Sarah Johnson",
-        publishedAt: "2 hours ago",
-        readTime: "5 min read",
-        views: "12.5K",
-        image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=400&fit=crop",
-        featured: true
-      },
-      {
-        id: 2,
-        title: "Global Markets Show Strong Recovery After Recent Volatility",
-        summary: "Stock markets worldwide demonstrate resilience as investors regain confidence following last week's economic uncertainties.",
-        category: "Business",
-        author: "Michael Chen",
-        publishedAt: "4 hours ago",
-        readTime: "3 min read",
-        views: "8.2K",
-        image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=400&fit=crop",
-        featured: false
-      },
-      {
-        id: 3,
-        title: "Olympic Training Facilities Embrace Sustainable Technology",
-        summary: "Athletes prepare for upcoming competitions using eco-friendly equipment and renewable energy-powered training centers.",
-        category: "Sports",
-        author: "Emma Rodriguez",
-        publishedAt: "6 hours ago",
-        readTime: "4 min read",
-        views: "6.7K",
-        image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop",
-        featured: false
-      },
-      {
-        id: 4,
-        title: "Breakthrough in Cancer Research Offers New Hope",
-        summary: "Scientists discover promising treatment method that shows significant improvement in early clinical trials.",
-        category: "Health",
-        author: "Dr. James Wilson",
-        publishedAt: "8 hours ago",
-        readTime: "6 min read",
-        views: "15.3K",
-        image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800&h=400&fit=crop",
-        featured: false
-      },
-      {
-        id: 5,
-        title: "Space Mission Reveals Stunning Images of Distant Galaxy",
-        summary: "Latest telescope observations provide unprecedented views of stellar formations billions of light-years away.",
-        category: "Science",
-        author: "Dr. Lisa Park",
-        publishedAt: "10 hours ago",
-        readTime: "4 min read",
-        views: "9.1K",
-        image: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=400&fit=crop",
-        featured: false
-      },
-      {
-        id: 6,
-        title: "Tech Giants Announce Major Climate Initiative",
-        summary: "Leading technology companies pledge billions toward carbon neutrality and sustainable innovation projects.",
-        category: "Technology",
-        author: "Alex Thompson",
-        publishedAt: "12 hours ago",
-        readTime: "5 min read",
-        views: "11.8K",
-        image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=400&fit=crop",
-        featured: false
+  // Translate all content
+  const translateAllContent = async (targetLang) => {
+    if (targetLang === 'en') {
+      setTranslatedContent({});
+      return;
+    }
+
+    setIsTranslating(true);
+    
+    try {
+      const translated = {};
+      
+      // Translate UI elements
+      const uiTexts = {
+        searchPlaceholder: "Search news...",
+        featuredStory: "Featured Story",
+        latestNews: "Latest News",
+        categories: {
+          All: "All",
+          Technology: "Technology",
+          Business: "Business", 
+          Sports: "Sports",
+          Health: "Health",
+          Science: "Science"
+        }
+      };
+
+      translated.ui = {};
+      translated.ui.searchPlaceholder = await translateText(uiTexts.searchPlaceholder, targetLang);
+      translated.ui.featuredStory = await translateText(uiTexts.featuredStory, targetLang);
+      translated.ui.latestNews = await translateText(uiTexts.latestNews, targetLang);
+      
+      translated.ui.categories = {};
+      for (const [key, value] of Object.entries(uiTexts.categories)) {
+        translated.ui.categories[key] = await translateText(value, targetLang);
       }
-    ],
-    so: [
-      {
-        id: 1,
-        title: "Tignoolajiyada AI ee Kacsan ay Bedeshay Warshadda Caafimaadka",
-        summary: "Horumarka cusub ee sirdoonka macmalka ah ayaa ballan qaadaya inuu bedelo daryeelka bukaanka iyo baarista caafimaadka guud ahaan isbitaalada adduunka.",
-        category: "Tignoolajiyada",
-        author: "Sarah Johnson",
-        publishedAt: "2 saacadood ka hor",
-        readTime: "5 daqiiqo aqris",
-        views: "12.5K",
-        image: "https://images.unsplash.com/photo-1559757148-5c350d0d3c56?w=800&h=400&fit=crop",
-        featured: true
-      },
-      {
-        id: 2,
-        title: "Suuqyada Caalamiga ah ayaa Muujiyay Soo Kabbasho Xoog leh ka dib Dhaqdhaqaaqa Dhowaan",
-        summary: "Suuqyada saamiyada adduunka ayaa muujiyay adkaysi iyadoo maalgashi-dayaashuhu ay dib u helayaan kalsoonida ka dib welwelka dhaqaalaha ee todobaadkii hore.",
-        category: "Ganacsiga",
-        author: "Michael Chen",
-        publishedAt: "4 saacadood ka hor",
-        readTime: "3 daqiiqo aqris",
-        views: "8.2K",
-        image: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=800&h=400&fit=crop",
-        featured: false
-      },
-      {
-        id: 3,
-        title: "Xarumaha Tababarka Olimbikada ayaa Qaatay Tignoolajiyada Joogtada ah",
-        summary: "Ciyaartoydu waxay u diyaargaroobayaan tartammada soo socda iyagoo isticmaalaya qalabka deegaanka u saaxiibka ah iyo xarumaha tababarka ee ku shaqeeya tamada la cusboonaysiin karo.",
-        category: "Ciyaaraha",
-        author: "Emma Rodriguez",
-        publishedAt: "6 saacadood ka hor",
-        readTime: "4 daqiiqo aqris",
-        views: "6.7K",
-        image: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&h=400&fit=crop",
-        featured: false
-      },
-      {
-        id: 4,
-        title: "Horumarka Cilmi-baarista Kansarka ah ayaa Bixiyay Rajada Cusub",
-        summary: "Saynisyahannadu waxay heleen hab daweeyn oo rajo badan oo muujiya horumar la taaban karo tijaabooyin caafimaad oo hore.",
-        category: "Caafimaadka",
-        author: "Dr. James Wilson",
-        publishedAt: "8 saacadood ka hor",
-        readTime: "6 daqiiqo aqris",
-        views: "15.3K",
-        image: "https://images.unsplash.com/photo-1559757175-0eb30cd8c063?w=800&h=400&fit=crop",
-        featured: false
-      },
-      {
-        id: 5,
-        title: "Hawlgalka Hawada Sare ayaa Shaaciyay Sawirro Cajiib ah oo Galaxi Fog",
-        summary: "Indha-indheynta durbaankii ugu dambeeyay ayaa bixisay aragtiyo aan hore loo arag oo ku saabsan qaabdhismeedka xiddigaha bilyan sannadood iftiimo fog.",
-        category: "Sayniska",
-        author: "Dr. Lisa Park",
-        publishedAt: "10 saacadood ka hor",
-        readTime: "4 daqiiqo aqris",
-        views: "9.1K",
-        image: "https://images.unsplash.com/photo-1446776653964-20c1d3a81b06?w=800&h=400&fit=crop",
-        featured: false
-      },
-      {
-        id: 6,
-        title: "Gawaarida Tignoolajiyada Waaweyn ayaa Ku Dhawaaqay Hindise Weyn oo Cimilada ah",
-        summary: "Shirkadaha tignoolajiyada hogaamiya ayaa ballan qaadaya bilyan doolar oo loogu talagalay dhexdhexaadnimada kaarboonka iyo mashaariicda hal-abuurka joogtada ah.",
-        category: "Tignoolajiyada",
-        author: "Alex Thompson",
-        publishedAt: "12 saacadood ka hor",
-        readTime: "5 daqiiqo aqris",
-        views: "11.8K",
-        image: "https://images.unsplash.com/photo-1473341304170-971dccb5ac1e?w=800&h=400&fit=crop",
-        featured: false
+
+      // Translate news articles
+      translated.articles = {};
+      for (const article of originalNewsData) {
+        translated.articles[article.id] = {
+          title: await translateText(article.title, targetLang),
+          summary: await translateText(article.summary, targetLang),
+          category: await translateText(article.category, targetLang),
+          readTime: await translateText(article.readTime, targetLang),
+          publishedAt: await translateText(article.publishedAt, targetLang)
+        };
       }
-    ]
+
+      setTranslatedContent(translated);
+    } catch (error) {
+      console.error('Translation failed:', error);
+    } finally {
+      setIsTranslating(false);
+    }
   };
 
   const switchToSomali = () => {
     setCurrentLanguage('so');
+    translateAllContent('so');
   };
 
   const switchToEnglish = () => {
     setCurrentLanguage('en');
+    setTranslatedContent({});
   };
 
-  const currentTranslations = translations[currentLanguage];
-  const currentNewsData = newsData[currentLanguage];
+  // Get translated text or fallback to original
+  const getTranslatedText = (originalText, translationPath) => {
+    if (currentLanguage === 'en') return originalText;
+    
+    const pathArray = translationPath.split('.');
+    let current = translatedContent;
+    
+    for (const key of pathArray) {
+      if (current && current[key]) {
+        current = current[key];
+      } else {
+        return originalText; // Fallback to original if translation not found
+      }
+    }
+    
+    return current || originalText;
+  };
+
+  // Get article data with translations
+  const getArticleData = (article) => {
+    if (currentLanguage === 'en' || !translatedContent.articles?.[article.id]) {
+      return article;
+    }
+    
+    const translated = translatedContent.articles[article.id];
+    return {
+      ...article,
+      title: translated.title,
+      summary: translated.summary,
+      category: translated.category,
+      readTime: translated.readTime,
+      publishedAt: translated.publishedAt
+    };
+  };
 
   const filteredNews = activeCategory === 'All' 
-    ? currentNewsData 
-    : currentNewsData.filter(article => 
-        currentLanguage === 'en' 
-          ? article.category === activeCategory
-          : article.category === currentTranslations.categories[activeCategory]
-      );
+    ? originalNewsData 
+    : originalNewsData.filter(article => article.category === activeCategory);
 
-  const featuredArticle = currentNewsData.find(article => article.featured);
+  const featuredArticle = originalNewsData.find(article => article.featured);
   const regularArticles = filteredNews.filter(article => !article.featured);
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Loading overlay */}
+      {isTranslating && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
+            <Loader2 className="h-6 w-6 animate-spin text-blue-500" />
+            <span className="text-lg font-medium">Translating content...</span>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
-      <header className="bg-white shadow-sm border-b sticky top-0 z-50">
+      <header className="bg-white shadow-sm border-b sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center space-x-4">
               <Menu className="h-6 w-6 text-gray-600 md:hidden" />
-              <h1 className="text-2xl font-bold text-gray-900">{currentTranslations.title}</h1>
+              <h1 className="text-2xl font-bold text-gray-900">NewsHub</h1>
             </div>
             
             <div className="hidden md:flex items-center space-x-8">
@@ -499,7 +504,7 @@ const NewsApp = () => {
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <input
                   type="text"
-                  placeholder={currentTranslations.searchPlaceholder}
+                  placeholder={getTranslatedText("Search news...", "ui.searchPlaceholder")}
                   className="pl-10 pr-4 py-2 w-80 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                 />
               </div>
@@ -510,9 +515,10 @@ const NewsApp = () => {
               <div className="flex items-center space-x-2 mr-4">
                 <button 
                   onClick={switchToEnglish}
+                  disabled={isTranslating}
                   className={`w-8 h-6 rounded-sm overflow-hidden border transition-colors ${
                     currentLanguage === 'en' ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-500'
-                  }`}
+                  } ${isTranslating ? 'opacity-50 cursor-not-allowed' : ''}`}
                   title="English (Kenya)"
                 >
                   <img 
@@ -523,9 +529,10 @@ const NewsApp = () => {
                 </button>
                 <button 
                   onClick={switchToSomali}
+                  disabled={isTranslating}
                   className={`w-8 h-6 rounded-sm overflow-hidden border transition-colors ${
                     currentLanguage === 'so' ? 'border-blue-500 ring-2 ring-blue-200' : 'border-gray-200 hover:border-blue-500'
-                  }`}
+                  } ${isTranslating ? 'opacity-50 cursor-not-allowed' : ''}`}
                   title="Somali"
                 >
                   <img 
@@ -559,7 +566,7 @@ const NewsApp = () => {
                     : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
                 }`}
               >
-                {currentTranslations.categories[category]}
+                {getTranslatedText(category, `ui.categories.${category}`)}
               </button>
             ))}
           </div>
@@ -571,36 +578,38 @@ const NewsApp = () => {
         {/* Featured Article */}
         {featuredArticle && activeCategory === 'All' && (
           <div className="mb-12">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6">{currentTranslations.featuredStory}</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">
+              {getTranslatedText("Featured Story", "ui.featuredStory")}
+            </h2>
             <div className="bg-white rounded-2xl shadow-lg overflow-hidden hover:shadow-xl transition-shadow">
               <div className="md:flex">
                 <div className="md:w-1/2">
                   <img
                     src={featuredArticle.image}
-                    alt={featuredArticle.title}
+                    alt={getArticleData(featuredArticle).title}
                     className="w-full h-64 md:h-full object-cover"
                   />
                 </div>
                 <div className="md:w-1/2 p-8">
                   <div className="flex items-center space-x-2 mb-4">
                     <span className="px-3 py-1 bg-blue-100 text-blue-800 text-xs font-medium rounded-full">
-                      {featuredArticle.category}
+                      {getArticleData(featuredArticle).category}
                     </span>
                     <span className="text-gray-500 text-sm">•</span>
-                    <span className="text-gray-500 text-sm">{featuredArticle.publishedAt}</span>
+                    <span className="text-gray-500 text-sm">{getArticleData(featuredArticle).publishedAt}</span>
                   </div>
                   <h3 className="text-2xl font-bold text-gray-900 mb-4 leading-tight">
-                    {featuredArticle.title}
+                    {getArticleData(featuredArticle).title}
                   </h3>
                   <p className="text-gray-600 mb-6 text-lg leading-relaxed">
-                    {featuredArticle.summary}
+                    {getArticleData(featuredArticle).summary}
                   </p>
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-4 text-sm text-gray-500">
                       <span className="font-medium">{featuredArticle.author}</span>
                       <div className="flex items-center space-x-1">
                         <Clock className="h-4 w-4" />
-                        <span>{featuredArticle.readTime}</span>
+                        <span>{getArticleData(featuredArticle).readTime}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Eye className="h-4 w-4" />
@@ -625,66 +634,72 @@ const NewsApp = () => {
         {/* News Grid */}
         <div className="mb-6">
           <h2 className="text-2xl font-bold text-gray-900 mb-6">
-            {activeCategory === 'All' ? currentTranslations.latestNews : `${currentTranslations.categories[activeCategory]} ${currentTranslations.latestNews.split(' ')[1] || 'News'}`}
+            {activeCategory === 'All' 
+              ? getTranslatedText("Latest News", "ui.latestNews")
+              : `${getTranslatedText(activeCategory, `ui.categories.${activeCategory}`)} ${getTranslatedText("Latest News", "ui.latestNews").split(' ')[1] || 'News'}`
+            }
           </h2>
           <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {regularArticles.map((article) => (
-              <article
-                key={article.id}
-                className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer"
-              >
-                <div className="relative overflow-hidden">
-                  <img
-                    src={article.image}
-                    alt={article.title}
-                    className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-medium rounded-full">
-                      {article.category}
-                    </span>
-                  </div>
-                </div>
-                
-                <div className="p-6">
-                  <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
-                    {article.title}
-                  </h3>
-                  <p className="text-gray-600 mb-4 text-sm leading-relaxed line-clamp-3">
-                    {article.summary}
-                  </p>
-                  
-                  <div className="flex items-center justify-between text-xs text-gray-500">
-                    <div className="flex items-center space-x-3">
-                      <span className="font-medium">{article.author}</span>
-                      <span>•</span>
-                      <span>{article.publishedAt}</span>
+            {regularArticles.map((article) => {
+              const articleData = getArticleData(article);
+              return (
+                <article
+                  key={article.id}
+                  className="bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow overflow-hidden group cursor-pointer"
+                >
+                  <div className="relative overflow-hidden">
+                    <img
+                      src={article.image}
+                      alt={articleData.title}
+                      className="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                    <div className="absolute top-4 left-4">
+                      <span className="px-3 py-1 bg-white/90 backdrop-blur-sm text-gray-900 text-xs font-medium rounded-full">
+                        {articleData.category}
+                      </span>
                     </div>
                   </div>
                   
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
-                    <div className="flex items-center space-x-4 text-xs text-gray-500">
-                      <div className="flex items-center space-x-1">
-                        <Clock className="h-3 w-3" />
-                        <span>{article.readTime}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Eye className="h-3 w-3" />
-                        <span>{article.views}</span>
+                  <div className="p-6">
+                    <h3 className="text-lg font-semibold text-gray-900 mb-3 line-clamp-2 leading-tight">
+                      {articleData.title}
+                    </h3>
+                    <p className="text-gray-600 mb-4 text-sm leading-relaxed line-clamp-3">
+                      {articleData.summary}
+                    </p>
+                    
+                    <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center space-x-3">
+                        <span className="font-medium">{article.author}</span>
+                        <span>•</span>
+                        <span>{articleData.publishedAt}</span>
                       </div>
                     </div>
-                    <div className="flex items-center space-x-1">
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors">
-                        <Share2 className="h-3 w-3" />
-                      </button>
-                      <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors">
-                        <Bookmark className="h-3 w-3" />
-                      </button>
+                    
+                    <div className="flex items-center justify-between mt-4 pt-4 border-t border-gray-100">
+                      <div className="flex items-center space-x-4 text-xs text-gray-500">
+                        <div className="flex items-center space-x-1">
+                          <Clock className="h-3 w-3" />
+                          <span>{articleData.readTime}</span>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Eye className="h-3 w-3" />
+                          <span>{article.views}</span>
+                        </div>
+                      </div>
+                      <div className="flex items-center space-x-1">
+                        <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors">
+                          <Share2 className="h-3 w-3" />
+                        </button>
+                        <button className="p-1.5 text-gray-400 hover:text-gray-600 transition-colors">
+                          <Bookmark className="h-3 w-3" />
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              </article>
-            ))}
+                </article>
+              );
+            })}
           </div>
         </div>
       </main>
